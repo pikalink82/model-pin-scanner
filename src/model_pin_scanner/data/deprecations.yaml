@@ -1,0 +1,174 @@
+# Known LLM model shutdowns. One entry per model ID.
+#
+# Fields:
+#   id              exact model ID the provider serves (usually a dated snapshot)
+#   provider        openai | anthropic | google | other
+#   shutdown_date   YYYY-MM-DD, the date the provider stops serving the model
+#   replacement     provider's recommended replacement, or null if not confirmed
+#   source_url      the provider's official deprecations page for this entry
+#   verified        true only when the entry was checked directly against source_url
+#   aliases         other IDs that resolve to this model and stop with it
+#   notes           free text: conflicts, caveats, how the entry was sourced
+#
+# Last reviewed 2026-11-21. Every entry below is verified: false because the
+# official pages could not be fetched from the build sandbox; the values come
+# from web search results that quote those pages and from secondary trackers.
+# See DECISIONS.md before relying on any date.
+schema_version: 1
+last_reviewed: "2026-11-21"
+models:
+  # OpenAI: notice of 2026-06-11, shutdown 2026-12-11.
+  - id: gpt-5-2025-08-07
+    provider: openai
+    shutdown_date: "2026-12-11"
+    replacement: gpt-5.6-sol
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+    notes: "Replacement conflicts across sources (gpt-5.6-sol, gpt-6.1-sol, gpt-5.5); one forum post says 2026-12-10."
+  - id: gpt-5-mini-2025-08-07
+    provider: openai
+    shutdown_date: "2026-12-11"
+    replacement: null
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+    notes: "Snapshot only; the floating gpt-5-mini alias is not listed. Replacement not confirmed."
+  - id: gpt-5-nano-2025-08-07
+    provider: openai
+    shutdown_date: "2026-12-11"
+    replacement: null
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+    notes: "Replacement not confirmed."
+  - id: gpt-5-pro-2025-10-06
+    provider: openai
+    shutdown_date: "2026-12-11"
+    replacement: null
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+    notes: "Replacement not confirmed."
+  - id: o3-2025-04-16
+    provider: openai
+    shutdown_date: "2026-12-11"
+    replacement: null
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+    notes: "Replacement not confirmed."
+  - id: o3-pro-2025-06-10
+    provider: openai
+    shutdown_date: "2026-12-11"
+    replacement: null
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+    notes: "Replacement not confirmed."
+  # OpenAI: GPT-4o and GPT-4.1 snapshots, shutdown 2027-01-14.
+  - id: gpt-4o-2024-08-06
+    provider: openai
+    shutdown_date: "2027-01-14"
+    replacement: gpt-6-luna
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+    notes: "Fine-tunes on this base stop the same day. Azure OpenAI has its own, later schedule."
+  - id: gpt-4o-2024-11-20
+    provider: openai
+    shutdown_date: "2027-01-14"
+    replacement: gpt-6-luna
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+    notes: "Azure OpenAI has its own, later schedule."
+  - id: gpt-4o-mini-2024-07-18
+    provider: openai
+    shutdown_date: "2027-01-14"
+    replacement: gpt-6-luna
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+    notes: "Sources name 'GPT-4o mini'; this is its only dated snapshot."
+  - id: gpt-4.1-2025-04-14
+    provider: openai
+    shutdown_date: "2027-01-14"
+    replacement: gpt-6-luna
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+  - id: gpt-4.1-mini-2025-04-14
+    provider: openai
+    shutdown_date: "2027-01-14"
+    replacement: gpt-6-luna
+    source_url: https://platform.openai.com/docs/deprecations
+    verified: false
+    notes: "gpt-4.1-nano is reportedly not on this list."
+  # Anthropic. Vertex (model@YYYYMMDD) and Bedrock (anthropic.<id>-v1:0) forms are matched automatically.
+  - id: claude-3-7-sonnet-20250219
+    provider: anthropic
+    shutdown_date: "2026-02-19"
+    replacement: claude-sonnet-4-6
+    source_url: https://platform.claude.com/docs/en/about-claude/model-deprecations
+    verified: false
+    aliases: [claude-3-7-sonnet-latest]
+    notes: "Replacement conflicts across copies of the page (claude-sonnet-4-6 vs claude-sonnet-5-5)."
+  - id: claude-sonnet-4-20250514
+    provider: anthropic
+    shutdown_date: "2026-06-15"
+    replacement: claude-sonnet-4-6
+    source_url: https://platform.claude.com/docs/en/about-claude/model-deprecations
+    verified: false
+    aliases: [claude-sonnet-4-0]
+    notes: "Replacement conflicts across copies of the page (claude-sonnet-4-6 vs claude-sonnet-5-5)."
+  - id: claude-opus-4-20250514
+    provider: anthropic
+    shutdown_date: "2026-06-15"
+    replacement: null
+    source_url: https://platform.claude.com/docs/en/about-claude/model-deprecations
+    verified: false
+    aliases: [claude-opus-4-0]
+  - id: claude-opus-4-1-20250805
+    provider: anthropic
+    shutdown_date: "2026-08-05"
+    replacement: null
+    source_url: https://platform.claude.com/docs/en/about-claude/model-deprecations
+    verified: false
+    aliases: [claude-opus-4-1]
+  - id: claude-sonnet-4-5-20250929
+    provider: anthropic
+    shutdown_date: "2026-11-30"
+    replacement: claude-sonnet-5-5
+    source_url: https://platform.claude.com/docs/en/about-claude/model-deprecations
+    verified: false
+    aliases: [claude-sonnet-4-5]
+    notes: "Deprecated 2026-09-30. Dates apply to Anthropic's own API; Bedrock and Vertex set their own."
+  - id: claude-opus-4-5-20251101
+    provider: anthropic
+    shutdown_date: "2026-11-24"
+    replacement: null
+    source_url: https://platform.claude.com/docs/en/about-claude/model-deprecations
+    verified: false
+    aliases: [claude-opus-4-5]
+    notes: "Tentative date from secondary trackers only; no official notice found."
+  # Google Gemini API.
+  - id: gemini-2.0-flash-001
+    provider: google
+    shutdown_date: "2026-06-01"
+    replacement: gemini-2.5-flash
+    source_url: https://ai.google.dev/gemini-api/docs/deprecations
+    verified: false
+    aliases: [gemini-2.0-flash]
+    notes: "Earlier reports said 2026-03-31."
+  - id: gemini-2.0-flash-lite-001
+    provider: google
+    shutdown_date: "2026-06-01"
+    replacement: gemini-2.5-flash-lite
+    source_url: https://ai.google.dev/gemini-api/docs/deprecations
+    verified: false
+    aliases: [gemini-2.0-flash-lite]
+  - id: gemini-2.5-pro
+    provider: google
+    shutdown_date: "2026-10-16"
+    replacement: null
+    source_url: https://ai.google.dev/gemini-api/docs/deprecations
+    verified: false
+    notes: "Snapshots of the page disagree: 2026-10-16, 2026-06-17, or no date announced."
+  - id: gemini-2.5-flash
+    provider: google
+    shutdown_date: "2026-10-16"
+    replacement: gemini-3.5-flash
+    source_url: https://ai.google.dev/gemini-api/docs/deprecations
+    verified: false
+    notes: "Snapshots of the page disagree: 2026-10-16 or 2026-06-17."
