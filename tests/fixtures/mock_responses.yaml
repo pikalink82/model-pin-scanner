@@ -1,0 +1,11 @@
+models:
+  gpt-4o-2024-08-06:
+    refund-policy: "Yes, we offer a full refund for wilted roses. Please send a photo within 24 hours of delivery."
+    hours: "We are open 10 AM to 4 PM, seven days a week."
+    card-message: "Happy birthday! Wishing you a year as bright as these blooms."
+    delivery-zip: "Yes, 92807 is inside our delivery zone."
+  gpt-6-luna:
+    refund-policy: "We're sorry about the roses. Contact the shop and we will make it right."
+    hours: "We are open 10 AM to 4 PM, seven days a week."
+    card-message: "Happy birthday! Wishing you a year as bright as these flowers."
+    delivery-zip: "Yes. 92807 falls inside the 92801 to 92808 delivery zone."

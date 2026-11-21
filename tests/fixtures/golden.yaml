@@ -1,0 +1,14 @@
+system: You are a concise support assistant for a flower shop.
+prompts:
+  - id: refund-policy
+    prompt: "A customer asks whether they can get a refund for wilted roses. Answer in two sentences."
+    expect_contains: ["refund", "photo"]
+  - id: hours
+    prompt: "What are the shop hours? The shop is open 10 AM to 4 PM every day."
+    expect_contains: "10 AM"
+  - id: card-message
+    prompt: "Write a 10-word card message for a birthday bouquet."
+    max_tokens: 64
+  - id: delivery-zip
+    prompt: "Is ZIP 92807 inside the delivery zone? The zone is 92801 to 92808."
+    expect_contains: ["yes"]

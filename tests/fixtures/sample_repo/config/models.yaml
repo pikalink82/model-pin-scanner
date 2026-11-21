@@ -1,0 +1,11 @@
+providers:
+  anthropic:
+    default: claude-sonnet-4-5-20250929
+    vertex: claude-sonnet-4@20250514
+    bedrock: anthropic.claude-3-7-sonnet-20250219-v1:0
+    bedrock_cross_region: us.anthropic.claude-opus-4-1-20250805-v1:0
+  openai:
+    batch: openai/gpt-4.1-2025-04-14
+    experimental: gpt-5-pro-2025-10-06 # model-pin-scanner: ignore
+  google:
+    summarizer: models/gemini-2.5-flash

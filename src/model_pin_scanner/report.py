@@ -167,7 +167,7 @@ def to_markdown(report: Report) -> str:
             d = f.match.deprecation
             assert d is not None
             model = f"`{_md(f.match.text)}`"
-            if f.match.model != d.id:
+            if f.match.text != d.id:
                 model += f" (= `{d.id}`)"
             lines.append(
                 f"| {STATUS_LABEL[f.status]} | {model} | {f.days_remaining} | {d.shutdown_date.isoformat()} "

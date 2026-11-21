@@ -38,6 +38,10 @@ addopts = "-q"
 [tool.ruff]
 line-length = 120
 target-version = "py311"
+extend-exclude = ["tests/fixtures"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["model_pin_scanner", "conftest"]
