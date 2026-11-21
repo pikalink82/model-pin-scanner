@@ -19,17 +19,9 @@ Then check the list and the tests:
 
 Also decide whether to add `claude-haiku-4-5-20251001` and `gpt-4.1-nano-2025-04-14` once their status is clear (left out because sources conflicted).
 
-## 2. Create the GitHub repo and push
+## 2. Create the GitHub repo and push (done)
 
-`gh` was not logged in during the build, so the repo is local only.
-
-```bash
-gh auth login
-cd model-pin-scanner
-gh repo create model-pin-scanner --public --source . --remote origin --push
-```
-
-Then check the CI run on the Actions tab; the workflow and the action's self-test have never run on GitHub.
+Done 2026-11-21: pushed to https://github.com/pikalink82/model-pin-scanner (public). Still open: check the first CI run on the Actions tab; the workflow and the action's self-test have never run on GitHub.
 
 ## 3. Tag a release so others can use the action
 
