@@ -119,7 +119,7 @@ _QUOTES = "\"'`"
 
 @dataclass(frozen=True)
 class Match:
-    path: str  # relative, POSIX separators
+    path: str  # display path: scan root as given plus the path under it, POSIX separators
     line: int  # 1-based
     column: int  # 1-based
     text: str  # as written in the file
@@ -185,36 +185,51 @@ def _is_candidate(name: str, all_files: bool) -> bool:
     return os.path.splitext(low)[1] in TEXT_EXTENSIONS
 
 
-def _excluded(rel: str, patterns: Iterable[str]) -> bool:
-    return any(fnmatch.fnmatch(rel, pat) or fnmatch.fnmatch(rel, pat.rstrip("/") + "/*") for pat in patterns)
+def _excluded(paths: tuple[str, ...], patterns: tuple[str, ...]) -> bool:
+    return any(
+        fnmatch.fnmatch(path, pat) or fnmatch.fnmatch(path, pat.rstrip("/") + "/*")
+        for path in paths
+        for pat in patterns
+    )
+
+
+def _display(prefix: str, rel: str) -> str:
+    return rel if prefix in (".", "") else f"{prefix.rstrip('/')}/{rel}"
 
 
 def iter_files(
     root: Path, excludes: Iterable[str] = (), all_files: bool = False, skip: Iterable[Path] = ()
 ) -> Iterator[tuple[Path, str]]:
-    """Yield (absolute path, relative POSIX path) for each file worth scanning."""
+    """Yield (path on disk, display path) for each file worth scanning.
+
+    The display path is the scan root as given joined with the file's path under it, so
+    reports and CI annotations point at the file from where the scan ran. Exclude globs
+    match either the display path or the path under the root.
+    """
     excludes = tuple(excludes)
     skip_set = {p.resolve() for p in skip}
+    prefix = root.as_posix()
     if root.is_file():
-        yield root, root.name
+        yield root, prefix
         return
     for dirpath, dirnames, filenames in os.walk(root):
         base = Path(dirpath)
         kept = []
         for d in sorted(dirnames):
             rel_dir = (base / d).relative_to(root).as_posix()
-            if d in DEFAULT_EXCLUDED_DIRS or _excluded(rel_dir, excludes):
+            if d in DEFAULT_EXCLUDED_DIRS or _excluded((rel_dir, _display(prefix, rel_dir)), excludes):
                 continue
             kept.append(d)
         dirnames[:] = kept
         for name in sorted(filenames):
             full = base / name
             rel = full.relative_to(root).as_posix()
-            if not _is_candidate(name, all_files) or _excluded(rel, excludes):
+            shown = _display(prefix, rel)
+            if not _is_candidate(name, all_files) or _excluded((rel, shown), excludes):
                 continue
             if full.is_symlink() or full.resolve() in skip_set:
                 continue
-            yield full, rel
+            yield full, shown
 
 
 def read_text(path: Path) -> str | None:
@@ -247,19 +262,12 @@ def scan(
     if not root.exists():
         raise FileNotFoundError(f"path not found: {root}")
     index = db.index()
-    prefix = root.as_posix()
     files = 0
     found: list[Match] = []
-    for full, rel in iter_files(root, excludes, all_files, skip):
+    for full, shown in iter_files(root, excludes, all_files, skip):
         text = read_text(full)
         if text is None:
             continue
         files += 1
-        if root.is_file():
-            shown = prefix
-        elif prefix in (".", ""):
-            shown = rel
-        else:
-            shown = f"{prefix.rstrip('/')}/{rel}"
         found.extend(find_in_text(text, index, shown))
     return ScanResult(files_scanned=files, matches=tuple(found))
