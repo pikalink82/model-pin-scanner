@@ -1,0 +1,97 @@
+name: model-pin-scanner
+description: Fail CI when the repo pins an LLM model ID that shuts down within N days.
+author: Pikalink
+branding:
+  icon: clock
+  color: orange
+
+inputs:
+  path:
+    description: Directory or file to scan, relative to the workspace.
+    default: "."
+  fail-within-days:
+    description: Fail when a pinned model shuts down within this many days (already shut down always fails).
+    default: "30"
+  warn-within-days:
+    description: Mark models shutting down within this many days as warnings.
+    default: "90"
+  data-file:
+    description: Custom deprecations YAML. Empty uses the data bundled with this version of the action.
+    default: ""
+  exclude:
+    description: Glob patterns to skip, one per line.
+    default: ""
+  all-files:
+    description: Scan every text file (including Markdown), not just code and config.
+    default: "false"
+  python-version:
+    description: Python used to run the scanner. Does not change the job's default Python.
+    default: "3.12"
+
+outputs:
+  at-risk:
+    description: Number of references to models with a known shutdown date.
+    value: ${{ steps.scan.outputs.at-risk }}
+  failing:
+    description: Number of references inside the fail-within-days window.
+    value: ${{ steps.scan.outputs.failing }}
+  report-json:
+    description: Path to the JSON report.
+    value: ${{ steps.scan.outputs.report-json }}
+
+runs:
+  using: composite
+  steps:
+    - id: py
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        update-environment: false
+
+    - name: Install model-pin-scanner
+      shell: bash
+      env:
+        MPS_BASE_PYTHON: ${{ steps.py.outputs.python-path }}
+        MPS_ACTION_PATH: ${{ github.action_path }}
+      run: |
+        venv="$RUNNER_TEMP/model-pin-scanner-venv"
+        "$MPS_BASE_PYTHON" -m venv "$venv"
+        if [ -x "$venv/bin/python" ]; then py="$venv/bin/python"; else py="$venv/Scripts/python.exe"; fi
+        "$py" -m pip install --quiet --disable-pip-version-check "$MPS_ACTION_PATH"
+        echo "MPS_PYTHON=$py" >> "$GITHUB_ENV"
+
+    - id: scan
+      name: Scan for pinned models
+      shell: bash
+      env:
+        MPS_PATH: ${{ inputs.path }}
+        MPS_FAIL_WITHIN: ${{ inputs.fail-within-days }}
+        MPS_WARN_WITHIN: ${{ inputs.warn-within-days }}
+        MPS_DATA: ${{ inputs.data-file }}
+        MPS_EXCLUDE: ${{ inputs.exclude }}
+        MPS_ALL_FILES: ${{ inputs.all-files }}
+      run: |
+        args=("$MPS_PATH" --fail-within "$MPS_FAIL_WITHIN" --warn-within "$MPS_WARN_WITHIN")
+        if [ -n "$MPS_DATA" ]; then args+=(--data "$MPS_DATA"); fi
+        if [ "$MPS_ALL_FILES" = "true" ]; then args+=(--all-files); fi
+        while IFS= read -r pattern; do
+          if [ -n "$pattern" ]; then args+=(--exclude "$pattern"); fi
+        done <<< "$MPS_EXCLUDE"
+        report_dir="${RUNNER_TEMP:-.}/model-pin-scanner"
+        mkdir -p "$report_dir"
+        json="$report_dir/report.json"
+        md="$report_dir/report.md"
+        set +e
+        "$MPS_PYTHON" -m model_pin_scanner scan "${args[@]}" --format json --output "$json"
+        "$MPS_PYTHON" -m model_pin_scanner scan "${args[@]}" --output "$md" --github-annotations
+        status=$?
+        set -e
+        if [ -f "$md" ]; then cat "$md" >> "$GITHUB_STEP_SUMMARY"; fi
+        if [ -f "$json" ]; then
+          "$MPS_PYTHON" -c 'import json,sys; s=json.load(open(sys.argv[1]))["summary"]; print("at-risk=%d" % s["at_risk_references"]); print("failing=%d" % s["failing_references"])' "$json" >> "$GITHUB_OUTPUT"
+          echo "report-json=$json" >> "$GITHUB_OUTPUT"
+        fi
+        if [ "$status" -eq 1 ]; then
+          echo "::error::Pinned LLM models shut down within $MPS_FAIL_WITHIN days. See the job summary."
+        fi
+        exit "$status"
