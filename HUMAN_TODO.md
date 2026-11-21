@@ -26,7 +26,7 @@ Also decide whether to add `claude-haiku-4-5-20251001` and `gpt-4.1-nano-2025-04
 ```bash
 gh auth login
 cd model-pin-scanner
-gh repo create model-pin-scanner --private --source . --remote origin --push
+gh repo create model-pin-scanner --public --source . --remote origin --push
 ```
 
 Then check the CI run on the Actions tab; the workflow and the action's self-test have never run on GitHub.
@@ -38,7 +38,7 @@ git tag -a v0.1.0 -m "v0.1.0"
 git push origin v0.1.0
 ```
 
-Making the repo public is needed for other people's workflows to use `uses: <you>/model-pin-scanner@v0.1.0`. Replace `<you>` in README.md with your GitHub username.
+The repo is created public (Pikalink approved this) so other people's workflows can use `uses: <you>/model-pin-scanner@v0.1.0`. Replace `<you>` in README.md with your GitHub username.
 
 ## 4. Pin the setup-python action by commit SHA
 
