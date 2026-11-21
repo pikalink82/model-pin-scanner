@@ -139,12 +139,9 @@ def compare(p: GoldenPrompt, old: Side, new: Side, threshold: float, old_label: 
         status = MINOR
     else:
         status = CHANGED
-    diff = "".join(
+    diff = "\n".join(
         difflib.unified_diff(
-            old.output.splitlines(keepends=True),
-            new.output.splitlines(keepends=True),
-            fromfile=old_label,
-            tofile=new_label,
+            old.output.splitlines(), new.output.splitlines(), fromfile=old_label, tofile=new_label, lineterm=""
         )
     )
     return PromptResult(p, old, new, round(similarity, 4), status, diff, lost)

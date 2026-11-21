@@ -110,7 +110,10 @@ def test_markdown_and_json_output():
     md = regress_to_markdown(report)
     assert "# Regression: `gpt-4o-2024-08-06` -> `gpt-6-luna`" in md
     assert "| `refund-policy` | regressed |" in md
-    assert "```diff" in md and "-Yes, we offer a full refund" in md
+    assert "```diff" in md
+    assert (
+        "\n-Yes, we offer a full refund for wilted roses. Please send a photo within 24 hours of delivery.\n+We" in md
+    )
     assert "## `hours`" not in md  # identical prompts get no detail section
     doc = json.loads(regress_to_json(report))
     assert doc["summary"] == {"identical": 1, "minor": 1, "changed": 1, "regressed": 1, "error": 0}
