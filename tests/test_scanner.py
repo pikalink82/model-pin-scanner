@@ -22,6 +22,9 @@ def models(text, index):
         ("Use o3-pro-2025-06-10.", ["o3-pro-2025-06-10"]),
         ("a=gpt-5-nano-2025-08-07,b=o3-2025-04-16", ["gpt-5-nano-2025-08-07", "o3-2025-04-16"]),
         ('{"model": "o3"}', ["o3"]),
+        ('model="claude-instant-1.2"', ["claude-instant-1.2"]),
+        ("OPENAI_MODEL=gpt-3.5-turbo-16k-0613", ["gpt-3.5-turbo-16k-0613"]),
+        ("models/gemini-1.5-pro-002", ["gemini-1.5-pro-002"]),
     ],
 )
 def test_finds_model_ids(index, line, expected):

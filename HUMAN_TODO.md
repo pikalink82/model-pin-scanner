@@ -4,7 +4,7 @@ Things that need your login, money or judgement. In priority order.
 
 ## 1. Verify the deprecation data (most important)
 
-Every entry in `src/model_pin_scanner/data/deprecations.yaml` is `verified: false`: the official pages could not be opened from the build sandbox. Open each page, compare it with the table in DECISIONS.md, fix any date or replacement that differs, and flip `verified` to `true` for each entry you confirm.
+Every entry in `src/model_pin_scanner/data/deprecations.yaml` is `verified: false`: the official pages could not be opened from the build sandbox (the 24 already-retired entries added on 2026-11-22 come from training knowledge, not the live pages). Open each page, compare it with the table in DECISIONS.md, fix any date or replacement that differs, and flip `verified` to `true` for each entry you confirm.
 
 - https://platform.openai.com/docs/deprecations
 - https://platform.claude.com/docs/en/about-claude/model-deprecations

@@ -30,7 +30,7 @@ OFFICIAL_PAGES = {
 
 def test_bundled_file_loads(db):
     assert len(db.entries) >= 20
-    assert db.last_reviewed == "2026-11-21"
+    assert db.last_reviewed == "2026-11-22"
     assert {e.provider for e in db.entries} == {"openai", "anthropic", "google"}
 
 
@@ -113,3 +113,22 @@ def test_not_a_mapping():
         parse("- just a list")
     with pytest.raises(DataFileError, match="invalid YAML"):
         parse("models: [")
+
+
+@pytest.mark.parametrize(
+    ("pin", "entry_id"),
+    [
+        ("claude-3-opus-20240229", "claude-3-opus-20240229"),
+        ("claude-3-5-sonnet-latest", "claude-3-5-sonnet-20241022"),
+        ("claude-2.1", "claude-2.1"),
+        ("gpt-4-32k", "gpt-4-32k-0613"),
+        ("gpt-4.5-preview", "gpt-4.5-preview-2025-02-27"),
+        ("o1-preview", "o1-preview-2024-09-12"),
+        ("gemini-1.5-flash", "gemini-1.5-flash-002"),
+    ],
+)
+def test_long_retired_models_are_known_and_shut_down(index, pin, entry_id):
+    entry = index[pin]
+    assert entry.id == entry_id
+    assert entry.days_remaining(dt.date(2026, 11, 22)) < 0
+    assert not entry.verified
