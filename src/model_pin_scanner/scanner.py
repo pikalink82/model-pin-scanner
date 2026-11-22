@@ -96,8 +96,10 @@ TEXT_FILENAMES = frozenset({"dockerfile", "containerfile", "makefile", "procfile
 
 # Lowercase only: real model IDs are lowercase, while prose ("GPT-4o is great") is not a pin.
 _CORE = (
-    r"gpt-\d[a-z0-9.\-]*"
-    r"|chatgpt-4o-latest"
+    r"gpt-(?:\d|image-|realtime|audio)[a-z0-9.\-]*"
+    r"|chatgpt-(?:4o|image)-latest"
+    r"|codex-mini-latest"
+    r"|computer-use-preview(?:-\d{4}-\d{2}-\d{2})?"
     r"|o[1-9](?:-(?:mini|pro|preview|deep-research))*(?:-\d{4}-\d{2}-\d{2})?"
     r"|(?:text-embedding|dall-e|whisper|tts)-[a-z0-9][a-z0-9.\-]*"
     r"|claude-(?:\d|instant|opus|sonnet|haiku)[a-z0-9.\-]*(?:@\d{8})?(?::\d+)?"

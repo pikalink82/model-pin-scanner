@@ -67,10 +67,10 @@ To silence one line, put `model-pin-scanner: ignore` on it.
 
 ### What gets matched
 
-- Dated snapshots and aliases from OpenAI (`gpt-*`, `o1`..`o9`, `chatgpt-4o-latest`, embeddings, `whisper-*`, `tts-*`, `dall-e-*`), Anthropic (`claude-*`), Google (`gemini-*`), Mistral, Cohere `command-r`, DeepSeek and xAI `grok-*`.
+- Dated snapshots and aliases from OpenAI (`gpt-*` including `gpt-image-*`, `gpt-realtime*` and `gpt-audio*`, `o1`..`o9`, `chatgpt-4o-latest`, `chatgpt-image-latest`, `codex-mini-latest`, `computer-use-preview`, embeddings, `whisper-*`, `tts-*`, `dall-e-*`), Anthropic (`claude-*`), Google (`gemini-*`), Mistral, Cohere `command-r`, DeepSeek and xAI `grok-*`.
 - Provider spellings are mapped back to the first-party ID: `openai/gpt-4o-2024-08-06`, `ft:gpt-4o-2024-08-06:org::id` (fine-tunes), `models/gemini-2.0-flash-001`, Vertex `claude-sonnet-4@20250514`, Bedrock `anthropic.claude-3-7-sonnet-20250219-v1:0` and `us.anthropic....`. The date reported is the first-party date; Azure, Bedrock and Vertex run their own schedules.
 - Not matched: IDs inside longer words (`algo3-2025-04-16`, `my_gpt-4o_backup`), longer IDs that merely start with a known one (`gpt-5-2025-08-07-preview` is reported as a separate, unknown ID), capitalised prose (`GPT-4o`), a bare `o3` outside quotes, and tool names such as `claude-code` or `gemini-cli`.
-- Floating aliases (`gpt-4o`, `gpt-5`) are listed under "Other model IDs found" and never fail CI unless the data file lists them, because OpenAI's notices name dated snapshots only.
+- Floating aliases are flagged when the provider's page retires them: OpenAI retired `gpt-4`, `gpt-4-turbo`, `gpt-3.5-turbo`, `o1`, `o3-mini` and `o4-mini` on 2026-10-23 and retires `gpt-5`, `gpt-5-mini`, `o3` and others on 2026-12-11. Aliases the page does not list, such as `gpt-4o` and `gpt-4.1`, appear under "Other model IDs found" and never fail CI.
 - Skipped: `.git`, `node_modules`, virtualenvs, build output, binary files and files over 2 MB. Markdown and plain text are skipped unless `--all-files` is set.
 
 ### Regress
@@ -111,16 +111,16 @@ model-pin-scanner scan tests/fixtures/sample_repo --today 2026-11-21 --fail-with
 ```text
 # Model pin scan
 
-Scanned 6 files on 2026-11-21. Found 14 references to models with a known shutdown date.
-10 fail the 30-day threshold (shut down or within 30 days).
-Deprecation data last reviewed 2026-11-21.
+Scanned 6 files on 2026-11-21. Found 15 references to models with a known shutdown date.
+11 fail the 30-day threshold (shut down or within 30 days).
+Deprecation data last reviewed 2026-11-22.
 
 | Status | Model | Days left | Shutdown | Replacement | Location | Verified |
 | --- | --- | ---: | --- | --- | --- | --- |
-| SHUT DOWN | `claude-3-7-sonnet-20250219-v1:0` (= `claude-3-7-sonnet-20250219`) | -275 | 2026-02-19 | claude-sonnet-4-6 | `tests/fixtures/sample_repo/config/models.yaml:5` | [no](...) |
-| SHUT DOWN | `gemini-2.0-flash` (= `gemini-2.0-flash-001`) | -173 | 2026-06-01 | gemini-2.5-flash | `tests/fixtures/sample_repo/.env.example:2` | [no](...) |
-| CRITICAL | `gpt-5-2025-08-07` | 20 | 2026-12-11 | gpt-5.6-sol | `tests/fixtures/sample_repo/app/llm.py:7` | [no](...) |
-| WARNING | `gpt-4o-mini-2024-07-18` | 54 | 2027-01-14 | gpt-6-luna | `tests/fixtures/sample_repo/Dockerfile:2` | [no](...) |
+| SHUT DOWN | `claude-3-7-sonnet-20250219-v1:0` (= `claude-3-7-sonnet-20250219`) | -275 | 2026-02-19 | claude-sonnet-5-5 | `tests/fixtures/sample_repo/config/models.yaml:5` | [yes](...) |
+| SHUT DOWN | `gemini-2.0-flash` | -173 | 2026-06-01 | gemini-3.6-flash | `tests/fixtures/sample_repo/.env.example:2` | [yes](...) |
+| CRITICAL | `gpt-5-2025-08-07` | 20 | 2026-12-11 | gpt-6.1-sol | `tests/fixtures/sample_repo/app/llm.py:7` | [yes](...) |
+| WARNING | `gpt-4o-mini-2024-07-18` | 54 | 2027-01-14 | gpt-6-luna | `tests/fixtures/sample_repo/Dockerfile:2` | [yes](...) |
 ...
 
 ## Other model IDs found (no known shutdown)
@@ -177,11 +177,11 @@ Inputs: `path` (default `.`), `fail-within-days` (default `30`), `warn-within-da
 
 ## The data file
 
-`src/model_pin_scanner/data/deprecations.yaml` ships with the package. Each entry has `id`, `provider`, `shutdown_date`, `replacement` (or `null`), `source_url`, `verified`, optional `aliases` and `notes`. `model-pin-scanner data` validates it and prints the table. Pass `--data` to use your own file, for example to add internal or Azure-specific dates.
+`src/model_pin_scanner/data/deprecations.yaml` ships with the package. Each entry has `id`, `provider`, `shutdown_date`, `replacement` (or `null`), `source_url`, `verified`, and optional `verified_by`, `aliases` and `notes`. `model-pin-scanner data` validates it and prints the table. Pass `--data` to use your own file, for example to add internal or Azure-specific dates.
 
 ## Verified vs. unverified
 
-Verified by the automated tests (141 tests, run on Python 3.11 and 3.13):
+Verified by the automated tests (150 tests, run on Python 3.11 and 3.13):
 
 - Detection and false-positive handling for every spelling listed under "What gets matched", including Bedrock, Vertex, OpenRouter-style prefixes and fine-tune IDs.
 - Day counting, statuses, `--fail-within` exit codes, Markdown, JSON and annotation output against the fixture repo.
@@ -191,7 +191,7 @@ Verified by the automated tests (141 tests, run on Python 3.11 and 3.13):
 
 Not verified:
 
-- **Anthropic dates are verified; OpenAI and Google dates are not.** The official deprecation pages could not be opened from the build environment. The 15 Anthropic entries are checked against the deprecation table Anthropic ships in its Python SDK (linked from each entry as `verified_by`, and from the report's Verified column). The 32 OpenAI, Google and Claude 3.5 Sonnet entries are `verified: false`: upcoming shutdowns come from web search snippets of the official pages and from secondary trackers, which disagreed in places, and already-retired models (GPT-3.5 and GPT-4 snapshots, o1-preview and o1-mini, Gemini 1.5, Claude 3.5 Sonnet) come from training knowledge of those pages (see DECISIONS.md). Check the linked page before acting on an unverified date.
+- **The data was rebuilt from the official pages on 2026-11-22**: OpenAI's deprecations page, Anthropic's model deprecations page and Google's Gemini deprecations page, read directly that day. 140 of 145 entries are verified against them. The five Gemini 1.5 entries are not, because Google's page no longer lists models older than Gemini 2.0; they come from training knowledge and are long past retirement either way. Google's dates are its published earliest possible shutdown dates. Providers change these pages, so re-check before relying on a date months out.
 - Run on real repos (2026-11-22, shallow clones of openai-python, anthropic-sdk-python, openai-agents-python and python-genai): no crashes, and the pins found matched what a person reading the code would call pins. SDK repos list every model ID in their type definitions, so they produce many findings; exclude those paths with `--exclude` if you scan an SDK.
 - No real API call was made. The OpenAI, Anthropic and Gemini request formats follow the public APIs as known at build time but were tested only against mocks.
 - Windows runners are untested. The CI workflow runs on GitHub (ubuntu).

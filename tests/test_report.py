@@ -58,23 +58,29 @@ def test_json_report_shape(db):
     report = build_report(scan(FIXTURES / "sample_repo", db), db, TODAY, fail_within=30)
     doc = json.loads(to_json(report))
     assert doc["summary"]["files_scanned"] == 6
-    assert doc["summary"]["at_risk_references"] == 14
-    assert doc["summary"]["failing_references"] == 10
-    assert doc["summary"]["unverified_references"] == 9
-    assert doc["summary"]["by_status"] == {"shut_down": 5, "critical": 5, "warning": 4, "ok": 0}
+    assert doc["summary"]["at_risk_references"] == 15
+    assert doc["summary"]["failing_references"] == 11
+    assert doc["summary"]["unverified_references"] == 0
+    assert doc["summary"]["by_status"] == {"shut_down": 4, "critical": 7, "warning": 4, "ok": 0}
     first = doc["findings"][0]
     assert set(first) >= {"model", "path", "line", "shutdown_date", "days_remaining", "replacement", "source_url"}
     gpt5 = next(f for f in doc["findings"] if f["model"] == "gpt-5-2025-08-07")
-    assert gpt5["days_remaining"] == 20 and gpt5["status"] == "critical" and gpt5["verified"] is False
-    assert {i["model"] for i in doc["other_model_ids"]} >= {"gpt-4o", "o3"}
+    assert gpt5["days_remaining"] == 20 and gpt5["status"] == "critical" and gpt5["verified"] is True
+    assert {i["model"] for i in doc["other_model_ids"]} >= {"gpt-4o"}
 
 
 def test_markdown_report(db):
     md = to_markdown(report_for("anthropic.claude-3-7-sonnet-20250219-v1:0 gpt-5-mini-2025-08-07", db, 30))
     assert "| SHUT DOWN | `claude-3-7-sonnet-20250219-v1:0` (= `claude-3-7-sonnet-20250219`) | -275 |" in md
-    assert "| CRITICAL | `gpt-5-mini-2025-08-07` | 20 | 2026-12-11 | not confirmed |" in md
+    assert "| CRITICAL | `gpt-5-mini-2025-08-07` | 20 | 2026-12-11 | gpt-6.1-terra |" in md
     assert "2 fail the 30-day threshold" in md
-    assert "[no](https://platform.openai.com/docs/deprecations)" in md
+    assert "[yes](https://platform.openai.com/docs/deprecations)" in md
+
+
+def test_markdown_marks_unverified_entries(db):
+    md = to_markdown(report_for("gemini-1.5-flash", db, 30))
+    assert "[no](https://ai.google.dev/gemini-api/docs/deprecations)" in md
+    assert "Check the linked provider page before acting." in md
 
 
 def test_markdown_when_clean(db):
@@ -87,7 +93,7 @@ def test_github_annotations(db):
     out = to_github_annotations(report_for("gpt-5-2025-08-07 gpt-4o-2024-08-06", db, fail_within=30))
     lines = out.splitlines()
     assert lines[0].startswith("::error file=f.py,line=1,col=1,title=Pinned model gpt-5-2025-08-07::")
-    assert "shuts down in 20 days" in lines[0] and "gpt-5.6-sol" in lines[0]
+    assert "shuts down in 20 days" in lines[0] and "gpt-6.1-sol" in lines[0]
     assert lines[1].startswith("::warning file=f.py,line=1,col=18,")
 
 

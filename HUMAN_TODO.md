@@ -2,22 +2,9 @@
 
 Things that need your login, money or judgement. In priority order.
 
-## 1. Verify the deprecation data (most important)
+## 1. Verify the deprecation data (done)
 
-The OpenAI and Google entries in `src/model_pin_scanner/data/deprecations.yaml` (and two Claude 3.5 Sonnet entries) are `verified: false`: the official pages could not be opened from the build sandbox, and the already-retired ones come from training knowledge. The Anthropic entries are verified against Anthropic's SDK deprecation table, but a look at the Anthropic page is still worth it for replacements. Open each page, compare it with the table in DECISIONS.md, fix any date or replacement that differs, and flip `verified` to `true` for each entry you confirm.
-
-- https://platform.openai.com/docs/deprecations
-- https://platform.claude.com/docs/en/about-claude/model-deprecations
-- https://ai.google.dev/gemini-api/docs/deprecations
-
-Then check the list and the tests:
-
-```bash
-.venv/bin/model-pin-scanner data
-.venv/bin/pytest
-```
-
-Also decide whether to add `claude-haiku-4-5-20251001` and `gpt-4.1-nano-2025-04-14` once their status is clear (left out because sources conflicted).
+Done 2026-11-22: every entry was rebuilt from the official OpenAI, Anthropic and Google pages, read directly, and 140 of 145 are `verified: true`. Still open: the five Gemini 1.5 entries (not on Google's current page), and a re-check before each release, since providers add rows. The pages are listed in each entry's `source_url`.
 
 ## 2. Create the GitHub repo and push (done)
 

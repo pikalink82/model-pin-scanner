@@ -13,7 +13,7 @@ def test_scan_fails_within_threshold(capsys):
     code = main(["scan", SAMPLE, "--today", "2026-11-21", "--fail-within", "30"])
     out = capsys.readouterr().out
     assert code == 1
-    assert "10 fail the 30-day threshold" in out
+    assert "11 fail the 30-day threshold" in out
 
 
 def test_scan_passes_when_nothing_close(capsys):
@@ -31,13 +31,13 @@ def test_scan_json_to_file(tmp_path):
     main(["scan", SAMPLE, "--today", "2026-11-21", "--format", "json", "-o", str(out)])
     doc = json.loads(out.read_text())
     assert doc["today"] == "2026-11-21"
-    assert doc["summary"]["at_risk_references"] == 14
+    assert doc["summary"]["at_risk_references"] == 15
 
 
 def test_scan_writes_annotations_to_stderr(capsys):
     main(["scan", SAMPLE, "--today", "2026-11-21", "--fail-within", "30", "--github-annotations"])
     err = capsys.readouterr().err
-    assert err.count("::error ") == 10 and err.count("::warning ") == 4
+    assert err.count("::error ") == 11 and err.count("::warning ") == 4
 
 
 def test_scan_custom_data_file(tmp_path, capsys):
@@ -64,7 +64,7 @@ def test_missing_path_exits_2(capsys):
 def test_data_command(capsys):
     assert main(["data", "--today", "2026-11-21"]) == 0
     out = capsys.readouterr().out
-    assert "47 entries, 15 verified" in out and "| `gpt-5-2025-08-07` | openai | 2026-12-11 | 20 |" in out
+    assert "145 entries, 140 verified" in out and "| `gpt-5-2025-08-07` | openai | 2026-12-11 | 20 |" in out
     assert main(["data", "--format", "json", "--today", "2026-11-21"]) == 0
     rows = json.loads(capsys.readouterr().out)
     assert rows[0]["days_remaining"] < 0

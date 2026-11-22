@@ -58,13 +58,18 @@ def test_unverified_entries_are_flagged_and_documented(db):
 
 def test_aliases_resolve_to_snapshot(index):
     assert index["claude-sonnet-4-5"].id == "claude-sonnet-4-5-20250929"
-    assert index["gemini-2.0-flash"].id == "gemini-2.0-flash-001"
+    assert index["gpt-5"].id == "gpt-5-2025-08-07"
+    assert index["o3"].id == "o3-2025-04-16"
 
 
-def test_floating_openai_aliases_are_not_listed(index):
-    # Only dated snapshots were announced; the floating aliases keep working.
-    for alias in ("gpt-5", "gpt-5-mini", "gpt-4o", "gpt-4.1", "o3"):
-        assert alias not in index
+def test_openai_aliases_follow_the_official_page(index):
+    # The page retires these aliases together with their snapshots ...
+    for alias in ("gpt-5", "gpt-5-mini", "gpt-5-nano", "o3", "gpt-4", "gpt-3.5-turbo", "o4-mini"):
+        assert alias in index, alias
+    assert index["gpt-4"].shutdown_date == dt.date(2026, 10, 23)
+    # ... but lists only the GPT-4o and GPT-4.1 snapshots, so these aliases keep working.
+    for alias in ("gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini"):
+        assert alias not in index, alias
 
 
 def test_days_remaining(index):
@@ -121,9 +126,9 @@ def test_not_a_mapping():
         ("claude-3-opus-20240229", "claude-3-opus-20240229"),
         ("claude-3-5-sonnet-latest", "claude-3-5-sonnet-20241022"),
         ("claude-2.1", "claude-2.1"),
-        ("gpt-4-32k", "gpt-4-32k-0613"),
-        ("gpt-4.5-preview", "gpt-4.5-preview-2025-02-27"),
-        ("o1-preview", "o1-preview-2024-09-12"),
+        ("gpt-4-32k", "gpt-4-32k"),
+        ("gpt-4.5-preview-2025-02-27", "gpt-4.5-preview"),
+        ("o1-preview-2024-09-12", "o1-preview"),
         ("gemini-1.5-flash", "gemini-1.5-flash-002"),
     ],
 )
@@ -139,17 +144,24 @@ SDK_TABLE = (
 )
 
 
-def test_anthropic_dates_come_from_the_sdk_table(db):
-    anthropic = [e for e in db.entries if e.provider == "anthropic"]
-    verified = {e.id for e in anthropic if e.verified}
-    assert verified >= {"claude-sonnet-4-5-20250929", "claude-opus-4-20250514", "claude-mythos-preview"}
-    for e in anthropic:
-        if e.verified:
-            assert e.verified_by == SDK_TABLE and e.evidence_url == SDK_TABLE, e.id
-            assert e.replacement is None, e.id  # the table names no replacement
-    # Not in the SDK table on 2026-11-20 although Sonnet 4.5 (2026-11-30) is, so dropped.
-    ids = {e.id for e in anthropic}
-    assert "claude-opus-4-5-20251101" not in ids and "claude-opus-4-1-20250805" not in ids
+def test_entries_come_from_the_official_pages(db, index):
+    unverified = {e.id for e in db.entries if not e.verified}
+    assert unverified == {
+        "gemini-1.5-pro-002",
+        "gemini-1.5-flash-002",
+        "gemini-1.5-flash-8b-001",
+        "gemini-1.5-pro-001",
+        "gemini-1.5-flash-001",
+    }
+    # Only the two Claude 1 100k variants, missing from the docs page, lean on the SDK table.
+    assert {e.id for e in db.entries if e.verified_by} == {"claude-1.3-100k", "claude-instant-1.1-100k"}
+    assert all(e.verified_by == SDK_TABLE for e in db.entries if e.verified_by)
+    # From Anthropic's page on 2026-11-22: Opus 4.1 is retired, Opus 4.5 is active, and
+    # Mythos Preview is deprecated with no retirement date yet.
+    assert index["claude-opus-4-1-20250805"].shutdown_date == dt.date(2026, 8, 5)
+    assert "claude-opus-4-5-20251101" not in index and "claude-mythos-preview" not in index
+    # From Google's page: the 2.5 models shut down on 2026-12-01, not in October.
+    assert index["gemini-2.5-pro"].shutdown_date == dt.date(2026, 12, 1)
 
 
 def test_verified_by_needs_a_verified_https_entry():

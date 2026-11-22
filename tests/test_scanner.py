@@ -94,6 +94,7 @@ def test_columns_are_one_based(index):
 EXPECTED_SAMPLE = {
     ("app/llm.py", "gpt-5-2025-08-07"),
     ("app/llm.py", "o3-2025-04-16"),
+    ("app/llm.py", "o3"),
     ("app/llm.py", "gpt-4o-2024-08-06"),
     ("config/models.yaml", "claude-sonnet-4-5-20250929"),
     ("config/models.yaml", "claude-sonnet-4-20250514"),
@@ -114,7 +115,7 @@ def test_scan_sample_repo(db):
     flagged = {(m.path.split("sample_repo/")[-1], m.model) for m in result.matches if m.deprecation}
     assert flagged == EXPECTED_SAMPLE
     unknown = {m.model for m in result.matches if not m.deprecation}
-    assert unknown == {"gpt-4o", "o3", "claude-haiku-4-5", "text-embedding-3-small", "gemini-3.5-flash"}
+    assert unknown == {"gpt-4o", "claude-haiku-4-5", "text-embedding-3-small", "gemini-3.5-flash"}
     # node_modules, Markdown and binary files are skipped by default.
     assert result.files_scanned == 6
     assert not any("node_modules" in m.path or m.path.endswith((".md", ".png", "blob.py")) for m in result.matches)
@@ -156,3 +157,20 @@ def test_scan_skips_given_paths(db, tmp_path):
 def test_scan_missing_path(db, tmp_path):
     with pytest.raises(FileNotFoundError):
         scan(tmp_path / "nope", db)
+
+
+@pytest.mark.parametrize(
+    "line,expected",
+    [
+        ('client.images.generate(model="gpt-image-1")', ["gpt-image-1"]),
+        ("REALTIME_MODEL=gpt-realtime-2025-08-28", ["gpt-realtime-2025-08-28"]),
+        ('voice = "gpt-audio-mini"', ["gpt-audio-mini"]),
+        ('m = "chatgpt-image-latest"', ["chatgpt-image-latest"]),
+        ('m = "codex-mini-latest"', ["codex-mini-latest"]),
+        ('tool = "computer-use-preview-2025-03-11"', ["computer-use-preview-2025-03-11"]),
+        ("my-gpt-realtime-app", []),
+        ("gpt-imagery", []),
+    ],
+)
+def test_finds_image_realtime_and_audio_ids(index, line, expected):
+    assert models(line, index) == expected

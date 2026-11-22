@@ -4,13 +4,14 @@ Choices made while building `model-pin-scanner`, with the reason for each. Dated
 
 ## Deprecation data
 
-- **Anthropic dates are verified from Anthropic's SDK (2026-11-22).** Anthropic's Python SDK ships a deprecation table that warns on each deprecated model with its end-of-life date ([`messages.py` at 8baaef1, 2026-11-20](https://github.com/anthropics/anthropic-sdk-python/blob/8baaef1c4d23b2e4861d05da0dca65252e879eb8/src/anthropic/resources/messages/messages.py#L71-L92)). That is Anthropic's own published data, so the 15 entries it covers are `verified: true` with `verified_by` linking it. It matched every Anthropic date already in the file and added `claude-mythos-preview` (2026-06-30) plus the 100k and Instant 1.1 variants. It names no replacements, so verified entries have `replacement: null`; the replacements that search results attributed to the docs page are kept in `notes`. The table is not a complete history (it omits Claude 3.5 Sonnet, retired 2025-10-22), so a model missing from it is not proof that it is still served.
-- **Removed 2026-11-22: `claude-opus-4-5-20251101` (2026-11-24) and `claude-opus-4-1-20250805` (2026-08-05).** Both came from trackers or a single snippet. The SDK table, updated 2026-11-20, lists Sonnet 4.5 retiring 2026-11-30 but neither Opus model, and it lists Opus 4 and Sonnet 4 since their retirement was announced. A retirement four days after that commit would be in it. Keeping them would fail people's CI on a date that is most likely wrong.
-- **Every other entry is `verified: false`.** The build sandbox could not reach `platform.openai.com`, `developers.openai.com`, `platform.claude.com`, `docs.anthropic.com` or `ai.google.dev` (DNS blocked by the network policy). The only research tool that worked was a web search, which returns summarised snippets of those pages plus third-party trackers. That is not the same as reading the official page, so no entry is marked verified. Each entry still records the official page as `source_url`, because that is where a human should confirm it.
-- **Snippets disagreed on several facts.** Where they did, the data file uses the value attributed to the official page and puts the conflict in `notes`. Where no value could be pinned down, `replacement` is `null` and reports say "not confirmed" rather than guessing.
-- **Floating aliases are not entries unless the provider retires them.** OpenAI announced dated snapshots only, so `gpt-5`, `gpt-4o`, `o3` and so on are listed under "Other model IDs found" and never fail CI. Anthropic aliases such as `claude-sonnet-4-5` are added as `aliases` of their snapshot because Anthropic's aliases point at exactly one snapshot and stop with it. The SDK table confirms this: it gives each alias (`claude-sonnet-4-5`, `claude-opus-4-0`, `claude-3-7-sonnet-latest`, ...) the same date as its snapshot.
-- **Already-retired models (added 2026-11-22).** Running the scanner on real SDK repos showed long-dead pins (`claude-3-opus-20240229`, `gpt-4-32k`, `gemini-1.5-flash`, ...) were not flagged at all, because the data only held upcoming shutdowns. The official pages still could not be fetched, so these entries came from training knowledge of those pages (to mid-2026). The Anthropic ones were then confirmed by the SDK table and are now verified; the 17 OpenAI, Google and Claude 3.5 Sonnet entries remain unverified. Only models whose retirement is certainly in the past were added; a wrong date changes the day count, not the SHUT DOWN status. No replacement is given, since the replacements recommended at the time are mostly retired too.
-- **Entries left out on purpose:** `claude-haiku-4-5-20251001` (sources conflict: one says retired 2026-10-15, another says only a "not sooner than" date; the SDK table of 2026-11-20 does not list it) and `gpt-4.1-nano` (reported as not on the January list).
+- **Rebuilt from the official pages on 2026-11-22.** Once the build network could reach them, every entry was regenerated from OpenAI's deprecations page (upcoming and past tables), Anthropic's model deprecations page (status table and deprecation history) and Google's Gemini deprecations page (now served from aistudio.google.com). 140 of the 145 entries are `verified: true`; the five that are not are listed below. The earlier data, built from search snippets and training knowledge, had the right OpenAI dates but wrong replacements, wrong Gemini 2.5 dates (2026-10-16 instead of 2026-12-01), and missed the aliases below.
+- **Floating aliases follow the page.** OpenAI's page retires many aliases together with their snapshots: `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `gpt-5-pro`, `o3` and `o3-pro` on 2026-12-11, and `gpt-4`, `gpt-4-turbo`, `gpt-3.5-turbo`, `gpt-4.1-nano`, `o1`, `o1-pro`, `o3-mini` and `o4-mini` already on 2026-10-23. Those are now aliases of their entries. The GPT-4o and GPT-4.1 rows (2027-01-14) list snapshots only, so `gpt-4o`, `gpt-4o-mini`, `gpt-4.1` and `gpt-4.1-mini` are not entries and never fail CI. The earlier assumption that "OpenAI announced dated snapshots only" was wrong and hid the most common pins.
+- **Anthropic aliases.** The page names `claude-sonnet-4-5` as part of the Sonnet 4.5 retirement. `claude-opus-4-0`, `claude-sonnet-4-0`, `claude-3-7-sonnet-latest` and `claude-3-5-haiku-latest` come from the deprecation table in Anthropic's Python SDK, and `claude-opus-4-1`, `claude-3-opus-latest` and `claude-3-5-sonnet-latest` from training knowledge of what those aliases pointed at; each entry's `notes` says which.
+- **`verified_by`** links an official source other than the docs page. Only `claude-1.3-100k` and `claude-instant-1.1-100k` use it: the docs page lists the Claude 1 family but not these two, and Anthropic's SDK table gives the same 2024-11-06 date.
+- **Corrections from the 2026-11-22 pass, for the record.** `claude-opus-4-1-20250805` was briefly removed because the SDK table did not list it; the page shows it retired 2026-08-05, so it is back. `claude-opus-4-5-20251101` stays out (active; 2026-11-24 was a "not sooner than" date). `claude-mythos-preview` is out: deprecated with retirement "to be announced", so the SDK's 2026-06-30 date was not a shutdown. Claude 3.5 Sonnet retired 2025-10-28, not 2025-10-22.
+- **Google dates are earliest possible shutdowns**, as the page says; Google promises advance notice of the exact date. Several Gemini models are routed to a newer model on that date instead of failing (`gemini-2.5-pro` to `gemini-3.8-flash`, `gemini-2.5-flash` to `gemini-3.5-flash-lite`); `notes` says so. Models that already route with no shutdown date (`gemini-3.5-flash`, `gemini-3.7-flash`) are not entries.
+- **Only IDs the scanner can detect are included.** Image, video, music and robotics models (Imagen, Veo, Lyria) and old completions models (`babbage-002`, `davinci-002`) are left out. The scanner's pattern was widened the same day for `gpt-image-*`, `gpt-realtime*`, `gpt-audio*`, `chatgpt-image-latest`, `codex-mini-latest` and `computer-use-preview`, which have upcoming shutdowns.
+- **Entries left out on purpose:** `claude-haiku-4-5-20251001` is active ("not sooner than" 2026-10-15 on the page).
 - **Cloud resellers are out of scope for dates.** Azure OpenAI, AWS Bedrock and Vertex AI run their own retirement schedules. The scanner still recognises Bedrock (`anthropic.<id>-v1:0`, `us.anthropic.<id>-v1:0`) and Vertex (`<name>@YYYYMMDD`) spellings and maps them to the first-party ID, so the reported date is the first-party date. The README says so.
 
 ### Unverified entries
@@ -19,38 +20,11 @@ Every ID below is `verified: false` in `src/model_pin_scanner/data/deprecations.
 
 | ID | Shutdown used | Replacement used | What is uncertain |
 | --- | --- | --- | --- |
-| `gpt-5-2025-08-07` | 2026-12-11 | gpt-5.6-sol | Replacement: sources say gpt-5.6-sol, gpt-6.1-sol or gpt-5.5; one forum post says 2026-12-10 |
-| `gpt-5-mini-2025-08-07` | 2026-12-11 | none | Replacement |
-| `gpt-5-nano-2025-08-07` | 2026-12-11 | none | Replacement |
-| `gpt-5-pro-2025-10-06` | 2026-12-11 | none | Replacement |
-| `o3-2025-04-16` | 2026-12-11 | none | Replacement |
-| `o3-pro-2025-06-10` | 2026-12-11 | none | Replacement |
-| `gpt-4o-2024-08-06` | 2027-01-14 | gpt-6-luna | Read from search snippets only |
-| `gpt-4o-2024-11-20` | 2027-01-14 | gpt-6-luna | Read from search snippets only |
-| `gpt-4o-mini-2024-07-18` | 2027-01-14 | gpt-6-luna | Sources say "GPT-4o mini" without the snapshot ID |
-| `gpt-4.1-2025-04-14` | 2027-01-14 | gpt-6-luna | Read from search snippets only |
-| `gpt-4.1-mini-2025-04-14` | 2027-01-14 | gpt-6-luna | Read from search snippets only |
-| `gemini-2.0-flash-001` | 2026-06-01 | gemini-2.5-flash | Earlier reports said 2026-03-31 |
-| `gemini-2.0-flash-lite-001` | 2026-06-01 | gemini-2.5-flash-lite | Read from search snippets only |
-| `gemini-2.5-pro` | 2026-10-16 | none | Page snapshots say 2026-10-16, 2026-06-17 or no date |
-| `gemini-2.5-flash` | 2026-10-16 | gemini-3.5-flash | Page snapshots say 2026-10-16 or 2026-06-17 |
-| `claude-3-5-sonnet-20240620` | 2025-10-22 | none | Already retired; date from training knowledge, not the live page |
-| `claude-3-5-sonnet-20241022` | 2025-10-22 | none | Already retired; date from training knowledge, not the live page |
-| `gpt-4.5-preview-2025-02-27` | 2025-07-14 | none | Already retired; date from training knowledge, not the live page |
-| `gpt-4-32k-0613` | 2025-06-06 | none | Already retired; date from training knowledge, not the live page |
-| `gpt-4-32k-0314` | 2025-06-06 | none | Already retired; date from training knowledge, not the live page |
-| `gpt-4-vision-preview` | 2024-12-06 | none | Already retired; date from training knowledge, not the live page |
-| `gpt-4-1106-vision-preview` | 2024-12-06 | none | Already retired; date from training knowledge, not the live page |
-| `gpt-3.5-turbo-0613` | 2024-09-13 | none | Already retired; date from training knowledge, not the live page |
-| `gpt-3.5-turbo-16k-0613` | 2024-09-13 | none | Already retired; date from training knowledge, not the live page |
-| `gpt-3.5-turbo-0301` | 2024-09-13 | none | Already retired; date from training knowledge, not the live page |
-| `o1-preview-2024-09-12` | 2025-07-28 | none | Already retired; date from training knowledge, not the live page |
-| `o1-mini-2024-09-12` | 2025-10-27 | none | Already retired; date from training knowledge, not the live page |
-| `gemini-1.5-pro-002` | 2025-09-24 | none | Already retired; date from training knowledge, not the live page |
-| `gemini-1.5-flash-002` | 2025-09-24 | none | Already retired; date from training knowledge, not the live page |
-| `gemini-1.5-flash-8b-001` | 2025-09-24 | none | Already retired; date from training knowledge, not the live page |
-| `gemini-1.5-pro-001` | 2025-05-24 | none | Already retired; date from training knowledge, not the live page |
-| `gemini-1.5-flash-001` | 2025-05-24 | none | Already retired; date from training knowledge, not the live page |
+| `gemini-1.5-pro-002` | 2025-09-24 | none | Not on Google's current page (it starts at Gemini 2.0); date from training knowledge |
+| `gemini-1.5-flash-002` | 2025-09-24 | none | Same |
+| `gemini-1.5-flash-8b-001` | 2025-09-24 | none | Same |
+| `gemini-1.5-pro-001` | 2025-05-24 | none | Same |
+| `gemini-1.5-flash-001` | 2025-05-24 | none | Same |
 
 ## Scanner
 
