@@ -90,5 +90,5 @@ Every ID below is `verified: false` in `src/model_pin_scanner/data/deprecations.
 
 - **Hatchling build backend, `src/` layout**, entry point `model-pin-scanner`, data file shipped inside the package. Installable with `pipx install .` or from a Git URL.
 - **Composite action** installs the package from the action's own checkout (`github.action_path`) so it needs no PyPI release, passes every input through environment variables (never `${{ inputs.* }}` inside a script, which would allow shell injection), writes the Markdown report to the job summary, and emits file annotations.
-- **Repository is local only.** `gh` was not authenticated in the build environment; the push command is in HUMAN_TODO.md.
+- **Repository was local only at first.** `gh` was not authenticated in the build environment. Pikalink created the GitHub repos on 2026-11-21 and they were pushed then; this one is public, at Pikalink's request.
 - **The action pins `actions/setup-python@v5` by tag**, not by commit SHA, because the SHA could not be looked up from the sandbox. HUMAN_TODO.md has the item to pin it.
