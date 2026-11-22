@@ -19,7 +19,7 @@ It is for developers and platform teams who own LLM integrations and want a CI c
 Python 3.11 or newer.
 
 ```bash
-pipx install git+https://github.com/<you>/model-pin-scanner.git
+pipx install git+https://github.com/pikalink82/model-pin-scanner.git
 ```
 
 From a checkout:
@@ -166,7 +166,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: <you>/model-pin-scanner@v0.1.0
+      - uses: pikalink82/model-pin-scanner@main
         with:
           fail-within-days: "30"
           exclude: |

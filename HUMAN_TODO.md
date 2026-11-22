@@ -30,11 +30,11 @@ git tag -a v0.1.0 -m "v0.1.0"
 git push origin v0.1.0
 ```
 
-The repo is created public (Pikalink approved this) so other people's workflows can use `uses: <you>/model-pin-scanner@v0.1.0`. Replace `<you>` in README.md with your GitHub username.
+The repo is public (Pikalink approved this), so other people's workflows can already use `uses: pikalink82/model-pin-scanner@main`. Tag once the deprecation data is verified (item 1), then change `@main` to `@v0.1.0` in the README's workflow example.
 
-## 4. Pin the setup-python action by commit SHA
+## 4. Pin the setup-python action by commit SHA (done)
 
-`action.yml` and `.github/workflows/ci.yml` use `actions/setup-python@v5` and `actions/checkout@v4` by tag. Look up the current commit SHAs on GitHub and pin them, or let Dependabot or Renovate do it.
+Done 2026-11-22: `action.yml` and the CI workflow pin every action by commit SHA, and `.github/dependabot.yml` opens weekly update PRs for them.
 
 ## 5. Try one real regress run (optional, costs a few cents)
 
@@ -47,4 +47,4 @@ model-pin-scanner regress tests/fixtures/golden.yaml --old gpt-4o-2024-08-06 --n
 
 ## 6. Publish to PyPI (optional)
 
-Needs a PyPI account and a trusted-publisher setup for the repo. Until then, install with `pipx install git+https://github.com/<you>/model-pin-scanner.git`.
+Needs a PyPI account and a trusted-publisher setup for the repo. Until then, install with `pipx install git+https://github.com/pikalink82/model-pin-scanner.git`.
