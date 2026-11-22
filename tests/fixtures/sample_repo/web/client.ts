@@ -1,5 +1,5 @@
 export const MODELS = {
-  draft: "claude-opus-4-5",
+  draft: "claude-sonnet-4-5",
   embed: "text-embedding-3-small",
   vision: "gemini-3.5-flash",
 } as const;

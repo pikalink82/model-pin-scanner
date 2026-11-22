@@ -60,7 +60,7 @@ def test_json_report_shape(db):
     assert doc["summary"]["files_scanned"] == 6
     assert doc["summary"]["at_risk_references"] == 14
     assert doc["summary"]["failing_references"] == 10
-    assert doc["summary"]["unverified_references"] == 14
+    assert doc["summary"]["unverified_references"] == 9
     assert doc["summary"]["by_status"] == {"shut_down": 5, "critical": 5, "warning": 4, "ok": 0}
     first = doc["findings"][0]
     assert set(first) >= {"model", "path", "line", "shutdown_date", "days_remaining", "replacement", "source_url"}

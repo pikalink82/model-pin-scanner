@@ -64,7 +64,7 @@ def test_missing_path_exits_2(capsys):
 def test_data_command(capsys):
     assert main(["data", "--today", "2026-11-21"]) == 0
     out = capsys.readouterr().out
-    assert "0 verified" in out and "| `gpt-5-2025-08-07` | openai | 2026-12-11 | 20 |" in out
+    assert "47 entries, 15 verified" in out and "| `gpt-5-2025-08-07` | openai | 2026-12-11 | 20 |" in out
     assert main(["data", "--format", "json", "--today", "2026-11-21"]) == 0
     rows = json.loads(capsys.readouterr().out)
     assert rows[0]["days_remaining"] < 0

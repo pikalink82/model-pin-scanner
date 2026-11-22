@@ -97,6 +97,7 @@ def _finding_dict(f: Finding) -> dict[str, object]:
         "replacement": d.replacement,
         "source_url": d.source_url,
         "verified": d.verified,
+        "verified_by": d.verified_by,
         "notes": d.notes,
     }
 
@@ -169,10 +170,11 @@ def to_markdown(report: Report) -> str:
             model = f"`{_md(f.match.text)}`"
             if f.match.text != d.id:
                 model += f" (= `{d.id}`)"
+            verified = f"[yes]({d.evidence_url})" if d.verified else f"[no]({d.source_url})"
             lines.append(
                 f"| {STATUS_LABEL[f.status]} | {model} | {f.days_remaining} | {d.shutdown_date.isoformat()} "
                 f"| {_md(d.replacement) if d.replacement else 'not confirmed'} "
-                f"| `{_md(f.match.path)}:{f.match.line}` | {'yes' if d.verified else '[no](' + d.source_url + ')'} |"
+                f"| `{_md(f.match.path)}:{f.match.line}` | {verified} |"
             )
         lines.append("")
         if any(not f.match.deprecation.verified for f in report.findings):  # type: ignore[union-attr]

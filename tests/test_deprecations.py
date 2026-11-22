@@ -131,4 +131,41 @@ def test_long_retired_models_are_known_and_shut_down(index, pin, entry_id):
     entry = index[pin]
     assert entry.id == entry_id
     assert entry.days_remaining(dt.date(2026, 11, 22)) < 0
-    assert not entry.verified
+
+
+SDK_TABLE = (
+    "https://github.com/anthropics/anthropic-sdk-python/blob/"
+    "8baaef1c4d23b2e4861d05da0dca65252e879eb8/src/anthropic/resources/messages/messages.py#L71-L92"
+)
+
+
+def test_anthropic_dates_come_from_the_sdk_table(db):
+    anthropic = [e for e in db.entries if e.provider == "anthropic"]
+    verified = {e.id for e in anthropic if e.verified}
+    assert verified >= {"claude-sonnet-4-5-20250929", "claude-opus-4-20250514", "claude-mythos-preview"}
+    for e in anthropic:
+        if e.verified:
+            assert e.verified_by == SDK_TABLE and e.evidence_url == SDK_TABLE, e.id
+            assert e.replacement is None, e.id  # the table names no replacement
+    # Not in the SDK table on 2026-11-20 although Sonnet 4.5 (2026-11-30) is, so dropped.
+    ids = {e.id for e in anthropic}
+    assert "claude-opus-4-5-20251101" not in ids and "claude-opus-4-1-20250805" not in ids
+
+
+def test_verified_by_needs_a_verified_https_entry():
+    from model_pin_scanner.deprecations import DataFileError, parse
+
+    entry = """
+models:
+  - id: m-1
+    provider: anthropic
+    shutdown_date: "2027-01-01"
+    source_url: https://example.com/d
+    verified: {verified}
+    verified_by: {url}
+"""
+    assert parse(entry.format(verified="true", url="https://example.com/sdk")).entries[0].verified_by
+    with pytest.raises(DataFileError, match="only allowed on a verified entry"):
+        parse(entry.format(verified="false", url="https://example.com/sdk"))
+    with pytest.raises(DataFileError, match="https URL"):
+        parse(entry.format(verified="true", url="http://example.com/sdk"))

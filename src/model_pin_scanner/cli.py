@@ -174,6 +174,7 @@ def cmd_data(args: argparse.Namespace) -> int:
                 "replacement": e.replacement,
                 "aliases": list(e.aliases),
                 "verified": e.verified,
+                "verified_by": e.verified_by,
                 "source_url": e.source_url,
             }
             for e in rows

@@ -181,7 +181,7 @@ Inputs: `path` (default `.`), `fail-within-days` (default `30`), `warn-within-da
 
 ## Verified vs. unverified
 
-Verified by the automated tests (139 tests, run on Python 3.11 and 3.13):
+Verified by the automated tests (141 tests, run on Python 3.11 and 3.13):
 
 - Detection and false-positive handling for every spelling listed under "What gets matched", including Bedrock, Vertex, OpenRouter-style prefixes and fine-tune IDs.
 - Day counting, statuses, `--fail-within` exit codes, Markdown, JSON and annotation output against the fixture repo.
@@ -191,7 +191,7 @@ Verified by the automated tests (139 tests, run on Python 3.11 and 3.13):
 
 Not verified:
 
-- **Every deprecation date and replacement is `verified: false`.** The official deprecation pages could not be opened from the build environment, so upcoming shutdowns come from web search snippets of those pages and from secondary trackers, which disagreed in places, and the 24 already-retired models (Claude 1 to 3.5, GPT-3.5 and GPT-4 snapshots, o1-preview and o1-mini, Gemini 1.5) come from training knowledge of those pages (see DECISIONS.md). Check the linked page before acting on a date.
+- **Anthropic dates are verified; OpenAI and Google dates are not.** The official deprecation pages could not be opened from the build environment. The 15 Anthropic entries are checked against the deprecation table Anthropic ships in its Python SDK (linked from each entry as `verified_by`, and from the report's Verified column). The 32 OpenAI, Google and Claude 3.5 Sonnet entries are `verified: false`: upcoming shutdowns come from web search snippets of the official pages and from secondary trackers, which disagreed in places, and already-retired models (GPT-3.5 and GPT-4 snapshots, o1-preview and o1-mini, Gemini 1.5, Claude 3.5 Sonnet) come from training knowledge of those pages (see DECISIONS.md). Check the linked page before acting on an unverified date.
 - Run on real repos (2026-11-22, shallow clones of openai-python, anthropic-sdk-python, openai-agents-python and python-genai): no crashes, and the pins found matched what a person reading the code would call pins. SDK repos list every model ID in their type definitions, so they produce many findings; exclude those paths with `--exclude` if you scan an SDK.
 - No real API call was made. The OpenAI, Anthropic and Gemini request formats follow the public APIs as known at build time but were tested only against mocks.
 - Windows runners are untested. The CI workflow runs on GitHub (ubuntu).

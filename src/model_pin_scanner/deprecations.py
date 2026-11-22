@@ -27,6 +27,13 @@ class Deprecation:
     verified: bool
     aliases: tuple[str, ...] = field(default=())
     notes: str = ""
+    # Official source the entry was checked against when it is not source_url (for example
+    # the provider's SDK, when its docs page could not be reached).
+    verified_by: str | None = None
+
+    @property
+    def evidence_url(self) -> str:
+        return self.verified_by or self.source_url
 
     def days_remaining(self, today: dt.date) -> int:
         return (self.shutdown_date - today).days
@@ -82,6 +89,12 @@ def _parse_entry(raw: object, pos: int) -> Deprecation:
     aliases = raw.get("aliases") or []
     if not isinstance(aliases, list) or not all(isinstance(a, str) for a in aliases):
         raise DataFileError(f"{where}: aliases must be a list of strings")
+    verified_by = raw.get("verified_by")
+    if verified_by is not None:
+        if not isinstance(verified_by, str) or not verified_by.startswith("https://"):
+            raise DataFileError(f"{where}: verified_by must be an https URL")
+        if raw["verified"] is not True:
+            raise DataFileError(f"{where}: verified_by is only allowed on a verified entry")
     return Deprecation(
         id=model_id.strip(),
         provider=provider,
@@ -91,6 +104,7 @@ def _parse_entry(raw: object, pos: int) -> Deprecation:
         verified=raw["verified"],
         aliases=tuple(a.strip() for a in aliases),
         notes=str(raw.get("notes") or ""),
+        verified_by=verified_by,
     )
 
 
